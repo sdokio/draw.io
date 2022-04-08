@@ -33,7 +33,7 @@ jobs:
 
       - uses: severgroup-tt/actions-drawio-cli@v0.0.2
         with:
-          source: . # 可以是目录，也可以是具体的文件。下同
+          source: / # 可以是目录，也可以是具体的文件。下同
           destination: output/
 
       - uses: stefanzweifel/git-auto-commit-action@v4
