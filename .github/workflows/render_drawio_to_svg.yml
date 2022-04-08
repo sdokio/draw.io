@@ -1,50 +1,42 @@
-# This is a basic workflow to help you get started with Actions
-
-name: CI
+name: 渲染drawio文件为svg图片
+# 描述：每次push源码到master分支后，自动渲染根目录下drawio文件为svg图片
 
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    paths-ignore:  # 下列文件的变更不触发
+      - '.github/**'
+      - '**.md'  # **: Matches zero or more of any character.当然也包括“/”符号，即递归匹配
+      - LICENSE
+      - .gitattributes
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  TZ: Asia/Shanghai
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-
-
-steps:
-  - uses: actions/checkout@v2
-    with:
-      ref: ${{ github.head_ref }}
-  - uses: severgroup-tt/actions-drawio-cli@v0.0.2
-    with:
-      source: doc/diagram.drawio
-      destination: doc/diagram.svg
-  - uses: stefanzweifel/git-auto-commit-action@v4
-    with:
-      file_pattern: doc/*.svg
-      commit_message: Update diagrams
+  # This workflow contains a single job called "render"
+  render:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - uses: severgroup-tt/actions-drawio-cli@v0.0.2
+        with:
+          source: . # 可以是目录，也可以是具体的文件。下同
+          destination: .
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          file_pattern: *.svg
+          commit_message: Update diagrams
