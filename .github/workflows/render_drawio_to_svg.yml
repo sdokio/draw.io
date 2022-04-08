@@ -20,23 +20,35 @@ env:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "render"
-  render:
+  # This workflow contains a single job called "render_drawio"
+  render_drawio:
+    name: job1:自动渲染drawio文件为svg图片
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.head_ref }}
+      - name: 01.检出代码
+        uses: actions/checkout@v2
 
-      - uses: severgroup-tt/actions-drawio-cli@v0.0.2
-        with:
-          source: / # 可以是目录，也可以是具体的文件。下同
-          destination: output/
+      - name: 02.渲染*.drawio文件
+        id: render
+        uses: docker://ghcr.io/racklet/render-drawio-action:v1
+        with: # Showcasing the default values here
+          formats: 'svg'
+          sub-dirs: '.'
+          skip-dirs: '.git'
+          # files: '' # unset, specify `dest-file=src-file` mappings here
+          log-level: 'info'
 
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - name: 03.列出已渲染的文件
+        run: 'ls -l ${{ steps.render.outputs.rendered-files }}'
+
+      - name: 04.提交渲染出的文件
+        uses: EndBug/add-and-commit@v7
         with:
-          file_pattern: output/*.svg
-          commit_message: Update diagrams
+          # This makes the GH Actions user/bot the author of the commit
+          default_author: github_actor
+          message: 'Automatically render .drawio files'
+          add: "${{ steps.render.outputs.rendered-files }}"
+        if: "${{ steps.render.outputs.rendered-files != ''}}"
