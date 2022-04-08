@@ -34,9 +34,9 @@ jobs:
       - uses: severgroup-tt/actions-drawio-cli@v0.0.2
         with:
           source: . # 可以是目录，也可以是具体的文件。下同
-          destination: .
+          destination: output/
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          file_pattern: *.svg
+          file_pattern: output/*.svg
           commit_message: Update diagrams
